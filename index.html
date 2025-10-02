@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Thánh Kiếm Hoàng Gia</title>
+  <style>
+    /* Reset để nền không trôi */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to top, #87ceeb, #e0f7ff); /* bầu trời xanh */
+      font-family: "Verdana", sans-serif;
+    }
+
+    .container {
+      position: relative;
+      width: 400px;
+      height: 600px;
+    }
+
+    /* Đá */
+    .rock {
+      position: absolute;
+      bottom: 0;
+      width: 500px;
+      left: -16%;
+      height: 350px;
+      background: url("stone.webp") no-repeat center/contain;
+      z-index: 2;
+    }
+
+    /* Kiếm */
+    .sword {
+      position: absolute;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg);
+      width: 170px;
+      height: 450px;
+      background: url("kiem.png") no-repeat center/contain;
+      z-index: 1;
+      transition: transform 0.5s ease;
+    }
+
+    /* Chuôi kiếm */
+    .hilt {
+      position: absolute;
+      top: 320px; /* gần chỗ chuôi kiếm */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+    }
+
+    .secret-spot {
+      position: absolute;
+      top: -8px;
+      left: 57%;
+      transform: translateX(-50%);
+      width: 9px;        /* nhỏ xíu */
+      height: 9px;
+      background: none;   /* debug: vẫn hiện màu đỏ */
+      border-radius: 50%;
+      cursor: default;
+      pointer-events: auto;
+    }
+
+    /* Thông báo */
+    .message {
+      position: absolute;
+      bottom: -60px; /* nằm dưới đá */
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      font-weight: bold;
+      display: none;
+      text-align: center;
+      width: 100%;
+      font-family: "Arial Black", "Verdana", sans-serif;
+      color: #ffeb3b;
+      -webkit-text-stroke: 2px black;
+      text-shadow: 0 0 15px #fff200, 0 0 25px #ffeb3b, 0 0 40px orange;
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 15px #fff200, 0 0 25px #ffeb3b, 0 0 40px orange; }
+      to   { text-shadow: 0 0 25px #fff200, 0 0 40px #ffeb3b, 0 0 60px orange; }
+    }
+
+    /* Hào quang hình tam giác từ trời */
+    .aura {
+      position: absolute;
+      top: -120px; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 300px solid transparent;
+      border-right: 300px solid transparent;
+      border-bottom: 600px solid rgba(255, 255, 150, 0.4);
+      z-index: 0;
+      display: none;
+      animation: auraPulse 2s infinite alternate;
+      filter: blur(20px);
+    }
+
+    @keyframes auraPulse {
+      from { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      to   { opacity: 0.9; transform: translateX(-50%) scale(1.1); }
+    }
+
+    /* Kiếm bay lên ngắn hơn */
+    .rise {
+      animation: riseUp 1.5s forwards;
+    }
+
+    @keyframes riseUp {
+      from { bottom: 90px; }
+      to { bottom: 200px; }
+    }
+
+    /* Rung khi sai */
+    .shake {
+      animation: shakeAnim 0.5s;
+    }
+
+    @keyframes shakeAnim {
+      0% { transform: translateX(-50%) rotate(180deg) translateX(0); }
+      25% { transform: translateX(-50%) rotate(180deg) translateX(-8px); }
+      50% { transform: translateX(-50%) rotate(180deg) translateX(8px); }
+      75% { transform: translateX(-50%) rotate(180deg) translateX(-8px); }
+      100% { transform: translateX(-50%) rotate(180deg) translateX(0); }
+    }
+
+    /* Vương miện bay lên */
+    .crown {
+      position: absolute;
+      font-size: 40px;
+      animation: floatUp 3s forwards;
+      opacity: 0;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-600px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sword" id="sword">
+      <div class="hilt">
+        <div class="secret-spot" id="spot"></div>
+      </div>
+    </div>
+    <div class="rock"></div>
+    <div class="aura" id="aura"></div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const sword = document.getElementById("sword");
+    const spot = document.getElementById("spot");
+    const message = document.getElementById("message");
+    const aura = document.getElementById("aura");
+
+    // Tạo vương miện bay
+    function spawnCrown() {
+      const crown = document.createElement("div");
+      crown.classList.add("crown");
+      crown.textContent = "👑";
+      document.body.appendChild(crown);
+
+      crown.style.left = Math.random() * (window.innerWidth - 50) + "px";
+      crown.style.top = window.innerHeight + "px";
+
+      setTimeout(() => crown.remove(), 3000);
+    }
+
+    // Click đúng
+    spot.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!sword.classList.contains("rise")) {
+        sword.classList.remove("shake");
+        void sword.offsetWidth;
+        sword.classList.add("rise");
+        aura.style.display = "block";
+        message.innerText = "CHÚC MỪNG NHÀ VUA";
+        message.style.display = "block";
+        message.style.color = "#ffeb3b";
+
+        setInterval(spawnCrown, 800); // liên tục thả vương miện
+      }
+    });
+
+    // Click sai
+    document.body.addEventListener("click", (e) => {
+      if (!e.target.closest("#spot") && !sword.classList.contains("rise")) {
+        sword.classList.remove("shake");
+        void sword.offsetWidth;
+        sword.classList.add("shake");
+        message.innerText = "Rất tiếc thánh kiếm không chọn bạn";
+        message.style.display = "block";
+        message.style.color = "red";
+
+        // Tự ẩn sau 5 giây
+        setTimeout(() => {
+          if (!sword.classList.contains("rise")) {
+            message.style.display = "none";
+          }
+        }, 5000);
+      }
+    });
+  </script>
+</body>
+</html>
